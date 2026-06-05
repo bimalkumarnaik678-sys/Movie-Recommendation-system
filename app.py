@@ -3,20 +3,18 @@ import pickle
 
 app = Flask(__name__)
 
-movies = pickle.load(
-    open("model/movies.pkl", "rb")
-)
+# Load model files
+with open("model/movies.pkl", "rb") as f:
+    movies = pickle.load(f)
 
-similarity = pickle.load(
-    open("model/similarity.pkl", "rb")
-)
+with open("model/similarity.pkl", "rb") as f:
+    similarity = pickle.load(f)
 
 
 def recommend(movie_name):
 
     movie_index = movies[
-    movies["title"].str.lower() ==
-    movie_name.lower()
+        movies["title"].str.lower() == movie_name.lower()
     ].index[0]
 
     distances = similarity[movie_index]
@@ -30,10 +28,8 @@ def recommend(movie_name):
     recommendations = []
 
     for movie in movie_list:
-
         recommendations.append({
-            "title":
-            movies.iloc[movie[0]].title
+            "title": movies.iloc[movie[0]].title
         })
 
     return recommendations
@@ -48,12 +44,9 @@ def home():
 def get_recommendations():
 
     try:
+        movie_name = request.json.get("movie", "")
 
-        movie_name = request.json["movie"]
-
-        recommendations = recommend(
-            movie_name
-        )
+        recommendations = recommend(movie_name)
 
         return jsonify({
             "success": True,
@@ -61,11 +54,11 @@ def get_recommendations():
         })
 
     except Exception as e:
+        print("ERROR:", e)  # Helps debugging on Render
 
         return jsonify({
             "success": False,
-            "error":
-            "Movie not found. Try another title."
+            "error": "Movie not found. Try another title."
         })
 
 
